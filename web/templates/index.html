@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Hello User!</title>
+    <script type="text/javascript" src="{{ url_for('static', filename='/js/site_time.js') }}"></script>
+</head>
+<body>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/translator_style.css') }}">
+
+    <div>
+         <p>
+            Application Server is UP.
+         </p>
+    </div>
+
+    <p id="id_time"></p>
+    <script type="text/javascript">
+        document.getElementById("id_time").innerHTML = "Current Local Time : " + get_curr_time();
+    </script>
+
+
+
+</body>
+</html>
