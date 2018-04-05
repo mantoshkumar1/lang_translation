@@ -21,7 +21,7 @@ class TranslatorApp:
         # If at any point you want to change service provider, change it here and you are done.
         self.service_creator = GoogleServiceCreator ( )
 
-        # holds instance of Caching
+        # holds instance of Caching strategy
         self.app_cache = TranslatorApp.get_cache_instance ( )
 
     @staticmethod

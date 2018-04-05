@@ -6,6 +6,10 @@ class BingProvider ( Provider ):
         Implements the Provider interface.
     """
 
+    def __init__ ( self ):
+        self.translator = None
+        self.lang_codes = None
+
     def translate ( self, text, src_lang, target_lang ):
         """
         This function will implement functionality to get translated message from bing \
