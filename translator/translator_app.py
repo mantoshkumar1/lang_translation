@@ -88,7 +88,7 @@ class TranslatorApp:
             abort ( 400, "All mandatory fields are not provided" )
         except ValueError as err:
             # 422 Unprocessable Entity
-            abort ( 422, "Unprocessable value: {0}".format ( err.message ( ) ) )
+            abort ( 422, "Unprocessable value: {0}".format ( err.args  ) )
         except BadRequest:
             # 400 Bad Request
             abort ( 400, "Provided values are having malformed syntax" )

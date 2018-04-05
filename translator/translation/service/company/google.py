@@ -43,7 +43,7 @@ class GoogleProvider ( Provider ):
             abort ( 424, "Google is not able to serve your request at this moment. Please try again." )
         except Exception as e:
             # If you get HTTP 5xx error or errors like #6, it’s probably because Google has banned your client IP address.
-            abort ( 424, e.message ( ) )
+            abort ( 424, e.message )
 
         return translated_obj.text
 
