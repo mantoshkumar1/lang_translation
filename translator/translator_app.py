@@ -21,41 +21,60 @@ class TranslatorApp:
         # If at any point you want to change service provider, change it here and you are done.
         self.service_creator = GoogleServiceCreator ( )
 
-        # holds instance of cache strategy
-        self.app_cache = TranslatorApp.get_cache_strategy_instance ( )
+        # holds instance of Caching
+        self.app_cache = TranslatorApp.get_cache_instance ( )
+
+    @staticmethod
+    def get_cache_instance ( ):
+        """
+        If at any point you want to change cache strategy, change it here and you are done, \
+        if you change cache strategy, change the passed values as well.
+        :return: Instance of one of Caching child
+        """
+        cache_strategy_instance = SimpleCacheStrategy ( )
+        cache_strategy_instance.apply_cache_strategy ( threshold=50, default_timeout=100 )
+        return cache_strategy_instance
+
+    def get_translation_from_cache ( self, text, src_lang, target_lang ):
+        """
+        If a same translation request has earlier been made, then it fetches translated text \
+        from cache, otherwise returns None.
+        :param text: The text that needs to be translated to target_lang (str)
+        :param src_lang: str
+        :param target_lang: str
+        :return: translated text (str) from cache / None
+        """
+        return self.app_cache.get_translation_from_cache ( text, src_lang, target_lang )
+
+    def set_translation_to_cache ( self, text, src_lang, target_lang, translated_text ):
+        """
+        This function saves the requests and corresponding translation result into the cache.
+        :param text: The text that was needed to be translated to target_lang (str)
+        :param src_lang: str
+        :param target_lang: str
+        :param translated_text: translated text (str) from cache / None (None : In case translation service fails.)
+        :return:
+        """
+        self.app_cache.set_translation_to_cache ( text, src_lang, target_lang, translated_text )
 
     def get_set_translation_from_cache ( self, text, src_lang, target_lang ):
         """
-        This function saves translated_text wrto a key: (text, src_lang, target_lang) into the cache. \
-        If the item exist in cache then it immediately returns the value. If item does not exist \
-        in the cache, it first get it from translator service, set it into cache and returns the \
-        translated text.
-
-        Reference: # http://flask.pocoo.org/docs/0.12/patterns/caching/
+        If the same translation request has earlier been made and if it is still saved into the \
+        cache, then this function fetches the result from cache and returns the result. However, \
+        if the translation request (text, src_lang, target_lang)  is not available in cache, then \
+        it make the request to the translator service, set it into cache \
+        [ (text, src_lang, target_lang): translated_text ] and then returns the translated text.
 
         :param text: The text that needs to be translated to target_lang (str)
         :param src_lang: str
         :param target_lang: str
         :return: translated text (str)
         """
-        item_key = (text, src_lang, target_lang)
-        translated_text = self.app_cache.get ( item_key )
-        if translated_text is None:
+        translated_text = self.get_translation_from_cache ( text, src_lang, target_lang )
+        if not translated_text:
             translated_text = self.service_creator.get_translation ( text, src_lang, target_lang )
-            self.app_cache.set ( item_key, translated_text )
-
+            self.set_translation_to_cache ( text, src_lang, target_lang, translated_text )
         return translated_text
-
-    @staticmethod
-    def get_cache_strategy_instance ( ):
-        """
-        If at any point you want to change cache strategy, change it here and you are done, \
-        if you change cache strategy, change the passed values as well.
-        :return:
-        """
-        caching_instance = SimpleCacheStrategy ( )
-        caching_instance.apply_cache_strategy ( threshold=50, default_timeout=100 )
-        return caching_instance.cache_strategy
 
     @staticmethod
     def verify_rpc_value ( user_dict ):
@@ -88,7 +107,7 @@ class TranslatorApp:
             abort ( 400, "All mandatory fields are not provided" )
         except ValueError as err:
             # 422 Unprocessable Entity
-            abort ( 422, "Unprocessable value: {0}".format ( err.args  ) )
+            abort ( 422, "Unprocessable value: {0}".format ( err.args ) )
         except BadRequest:
             # 400 Bad Request
             abort ( 400, "Provided values are having malformed syntax" )

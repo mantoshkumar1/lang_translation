@@ -1,3 +1,5 @@
+import logging
+from logging.handlers import RotatingFileHandler
 from flask import Flask, render_template
 
 from translator.translator_app import TranslatorApp
@@ -30,28 +32,36 @@ def add_emp_schedule ( ):
 
 @app.errorhandler ( 400 )
 def client_bad_request ( error ):
+    app.logger.info ( error )
     return error
 
 
 @app.errorhandler ( 404 )
 def page_not_found ( error ):
+    app.logger.info ( error )
     return render_template ( 'page_not_found.html' ), 404
 
 
 @app.errorhandler ( 405 )
 def method_not_implemented ( error ):
+    app.logger.info ( error )
     return "This method has not been implemented.", 405
 
 
 @app.errorhandler ( 413 )
 def client_bad_request ( error ):
+    app.logger.info ( error )
     return error
 
 
 @app.errorhandler ( 422 )
 def service_not_supported ( error ):
+    app.logger.info ( error )
     return error
 
 
 if __name__ == '__main__':
+    handler = RotatingFileHandler ( filename='./logs/app.log', mode='a', maxBytes=200000, backupCount=10 )
+    handler.setLevel ( logging.DEBUG )
+    app.logger.addHandler ( handler )
     app.run ( threaded=True, debug=True )

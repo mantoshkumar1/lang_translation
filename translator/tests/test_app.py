@@ -4,6 +4,7 @@ from run_lang_translation_server import app, translator_app
 from .helper import Helper
 
 
+
 class BasicTests ( unittest.TestCase ):
 
     # executed prior to each test
@@ -19,7 +20,7 @@ class BasicTests ( unittest.TestCase ):
     # executed after each test
     def tearDown ( self ):
         #  Clears the cache.
-        translator_app.app_cache.clear ( )
+        translator_app.app_cache.cache_strategy.clear ( )
 
     #### tests ####
     def test_main_page ( self ):
