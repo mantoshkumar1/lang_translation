@@ -64,4 +64,4 @@ if __name__ == '__main__':
     handler = RotatingFileHandler ( filename='./logs/app.log', mode='a', maxBytes=200000, backupCount=10 )
     handler.setLevel ( logging.DEBUG )
     app.logger.addHandler ( handler )
-    app.run ( threaded=True, debug=True )
+    app.run ( threaded=True, debug=False )
