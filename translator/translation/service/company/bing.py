@@ -1,4 +1,4 @@
-from translator.translation.service.provider import Provider
+from ..provider import Provider
 
 
 class BingProvider ( Provider ):

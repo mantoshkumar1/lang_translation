@@ -4,8 +4,6 @@ from translator.translator_app import TranslatorApp
 
 translator_app = TranslatorApp.get_app_instance ( )
 
-# from flask_caching import Cache
-
 app = Flask ( __name__,
               static_url_path='',  # removes any preceding path from the URL (as the default is /static)
               static_folder='web/static',  # will tell Flask to serve the files found at web/static.
@@ -13,12 +11,7 @@ app = Flask ( __name__,
               )
 
 
-# cache = Cache(config={'CACHE_TYPE': 'simple'})
-# cache.init_app(app)
-
-# import time
 @app.route ( '/' )
-# @cache.cached(timeout=5)
 def index ( ):
     return render_template ( 'index.html' )
 

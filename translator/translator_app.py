@@ -4,6 +4,7 @@ from flask import abort
 from flask import request, jsonify
 from werkzeug.exceptions import BadRequest
 
+from translator.caching.strategy.simple_caching import SimpleCacheStrategy
 from translator.translation.service_creator.company.google_creator import GoogleServiceCreator
 
 
@@ -20,11 +21,47 @@ class TranslatorApp:
         # If at any point you want to change service provider, change it here and you are done.
         self.service_creator = GoogleServiceCreator ( )
 
+        # holds instance of cache strategy
+        self.app_cache = TranslatorApp.get_cache_strategy_instance ( )
+
+    def get_set_translation_from_cache ( self, text, src_lang, target_lang ):
+        """
+        This function saves translated_text wrto a key: (text, src_lang, target_lang) into the cache. \
+        If the item exist in cache then it immediately returns the value. If item does not exist \
+        in the cache, it first get it from translator service, set it into cache and returns the \
+        translated text.
+
+        Reference: # http://flask.pocoo.org/docs/0.12/patterns/caching/
+
+        :param text: The text that needs to be translated to target_lang (str)
+        :param src_lang: str
+        :param target_lang: str
+        :return: translated text (str)
+        """
+        item_key = (text, src_lang, target_lang)
+        translated_text = self.app_cache.get ( item_key )
+        if translated_text is None:
+            translated_text = self.service_creator.get_translation ( text, src_lang, target_lang )
+            self.app_cache.set ( item_key, translated_text )
+
+        return translated_text
+
+    @staticmethod
+    def get_cache_strategy_instance ( ):
+        """
+        If at any point you want to change cache strategy, change it here and you are done, \
+        if you change cache strategy, change the passed values as well.
+        :return:
+        """
+        caching_instance = SimpleCacheStrategy ( )
+        caching_instance.apply_cache_strategy ( threshold=50, default_timeout=100 )
+        return caching_instance.cache_strategy
+
     @staticmethod
     def verify_rpc_value ( user_dict ):
         """
         Verify POST RPC data. If data is not JSON format, it raises ValueError error.
-        :param user_dict:
+        :param user_dict: json data
         :return:
         """
         for key in user_dict:
@@ -68,7 +105,8 @@ class TranslatorApp:
         src_lang = request.json[ 'source_lang' ]
         target_lang = request.json[ 'target_lang' ]
 
-        translated_text = self.service_creator.get_translation ( text, src_lang, target_lang )
+        # if translation is available in cache, just fetch it from there. Otherwise use translation service.
+        translated_text = self.get_set_translation_from_cache ( text, src_lang, target_lang )
 
         return jsonify ( {"Translation": translated_text} )
 
@@ -83,21 +121,16 @@ class TranslatorApp:
         return jsonify ( {"Supported languages": supported_lang} )
 
     @classmethod
-    def get_app_instance ( cls, *args, **kwargs ):
+    def get_app_instance ( cls ):
         """
         This function uses “Double Checked Locking” to return an instance of TranslatorApp.
         Once a TranslatorApp object is created synchronization among threads is no longer useful \
         because now obj will not be null and any sequence of operations will lead to consistent \
         results. So we will only acquire lock on the get_app_instance() once, when the obj is null. \
         This way we only synchronize the first way through, just what we want.
-        :param cls: Don't pass this parameter when calling this function, as ??todo
-        :param args:
-        :param kwargs:
-        :return:
+        :param cls: Don't pass this parameter when calling this function, as it's a classmethod
+        :return: an instance of TranslatorApp
         """
-        # for name, value in kwargs.items ( ):
-        #    print (name, value)
-
         if not cls.__app_instance:
             with cls.__singleton_lock:
                 if not cls.__app_instance:

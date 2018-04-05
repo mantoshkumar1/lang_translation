@@ -2,7 +2,7 @@ import googletrans
 from flask import abort
 from hyper.http20.exceptions import StreamResetError
 
-from translator.translation.service.provider import Provider
+from ..provider import Provider
 
 
 class GoogleProvider ( Provider ):
