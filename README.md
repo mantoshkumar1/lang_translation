@@ -60,14 +60,14 @@ Response:
 
 **Note**: Values for source_lang and target_lang are case-insensitive. All the value of the keys must be a string type.
 
-#### Error Codes
+## Error Codes
 400, 404, 405, 413, 422
 
-# How to execute unit tests for the application
+## How to execute unit tests for the application
 <code>$ cd lang_translation</code><br>
 <code>$ python3 -m unittest discover</code>
 
-## Algorithm of Domain Crawler - Domain Mapping
+## Architecture Design of Language Translation
 <p align="center">
   <img src="docs/class_diagram.PNG">
   <br>Class Diagram of Language Translation<br>
